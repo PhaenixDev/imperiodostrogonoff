@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: #0a0a0c;
+    color: #fdfbf7;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer utilities {
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #fef08a 0%, #d4af37 50%, #b89428 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .text-gold-shimmer {
+    background: linear-gradient(90deg, #d4af37 0%, #fff 50%, #d4af37 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shine 4s linear infinite;
+  }
+
+  .border-gold-subtle {
+    border-color: rgba(212, 175, 55, 0.22);
+  }
+
+  .border-gold-glow {
+    border-color: rgba(212, 175, 55, 0.45);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
+  }
+
+  .bg-gold-gradient {
+    background: linear-gradient(135deg, #eab308 0%, #d4af37 50%, #b48a20 100%);
+  }
+
+  .bg-gold-gradient-hover:hover {
+    background: linear-gradient(135deg, #fbbf24 0%, #e5b839 50%, #c49929 100%);
+  }
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* Custom Luxury Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0d0d11;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a35;
+  border-radius: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d4af37;
+}
+
+/* Smooth modal backdrop */
+.modal-backdrop-blur {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
