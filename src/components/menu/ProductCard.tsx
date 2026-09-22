@@ -58,25 +58,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <p className="text-xs text-zinc-400 line-clamp-2 mt-1.5 font-normal leading-relaxed">
             {product.description}
           </p>
-
-          {/* Combo items bullet list preview if present */}
-          {product.comboItems && (
-            <div className="mt-2 pt-2 border-t border-zinc-800/80">
-              <ul className="text-[11px] text-amber-200/90 space-y-0.5">
-                {product.comboItems.slice(0, 3).map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-1.5 truncate">
-                    <span className="w-1 h-1 rounded-full bg-amber-400"></span>
-                    <span className="truncate">{item}</span>
-                  </li>
-                ))}
-                {product.comboItems.length > 3 && (
-                  <li className="text-[10px] text-zinc-400 italic">
-                    + {product.comboItems.length - 3} acompanhamentos inclusos
-                  </li>
-                )}
-              </ul>
-            </div>
-          )}
         </div>
 
         {/* Pricing & Add Button Footer */}

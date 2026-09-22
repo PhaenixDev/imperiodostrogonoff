@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { X, Plus, Minus, ShoppingBag, Check, Sparkles, Zap, ExternalLink } from 'lucide-react';
+import { X, Plus, Minus, ShoppingBag, Zap, ExternalLink } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { formatBRL } from '../../services/whatsappService';
 import type { CartItemOption } from '../../services/whatsappService';
+import type { OptionGroup } from '../../data/menuData';
 import { getAnotaOrderUrl } from '../../services/anotaLink';
+
+// Chave composta para localizar a quantidade de um item dentro do seu grupo
+function qtyKey(groupId: string, itemId: string) {
+  return `${groupId}::${itemId}`;
+}
 
 export const ProductModal: React.FC = () => {
   const { selectedProductForModal, closeProductModal, addItem, setIsCartOpen } = useCart();
-  
+
   const [quantity, setQuantity] = useState(1);
-  const [selectedOptions, setSelectedOptions] = useState<Record<string, { optionName: string; priceDelta: number }>>({});
+  const [selectedQuantities, setSelectedQuantities] = useState<Record<string, number>>({});
   const [notes, setNotes] = useState('');
 
   // Reset local state whenever product changes
@@ -17,20 +23,7 @@ export const ProductModal: React.FC = () => {
     if (selectedProductForModal) {
       setQuantity(1);
       setNotes('');
-
-      // Auto-select defaults for required option groups
-      const initialOptions: Record<string, { optionName: string; priceDelta: number }> = {};
-      if (selectedProductForModal.optionGroups) {
-        selectedProductForModal.optionGroups.forEach(group => {
-          if (group.required && group.options.length > 0) {
-            initialOptions[group.id] = {
-              optionName: group.options[0].name,
-              priceDelta: group.options[0].priceDelta || 0
-            };
-          }
-        });
-      }
-      setSelectedOptions(initialOptions);
+      setSelectedQuantities({});
     }
   }, [selectedProductForModal]);
 
@@ -49,33 +42,61 @@ export const ProductModal: React.FC = () => {
 
   const product = selectedProductForModal;
   const anotaOrderUrl = getAnotaOrderUrl(product);
+  const optionGroups = product.optionGroups || [];
 
-  // Calculate current unit price including selected option modifiers
-  const optionsExtra = Object.values(selectedOptions).reduce((sum, opt) => sum + opt.priceDelta, 0);
+  const getQty = (groupId: string, itemId: string) => selectedQuantities[qtyKey(groupId, itemId)] || 0;
+
+  const getGroupTotal = (group: OptionGroup) =>
+    group.items.reduce((sum, item) => sum + getQty(group.id, item.id), 0);
+
+  const setQty = (group: OptionGroup, itemId: string, delta: number) => {
+    setSelectedQuantities(prev => {
+      const key = qtyKey(group.id, itemId);
+      const item = group.items.find(i => i.id === itemId);
+      if (!item) return prev;
+
+      const currentQty = prev[key] || 0;
+      const groupTotal = group.items.reduce((sum, i) => sum + (prev[qtyKey(group.id, i.id)] || 0), 0);
+
+      let nextQty = currentQty + delta;
+      nextQty = Math.max(0, Math.min(item.maxQuantity, nextQty));
+
+      // Não deixa o total do grupo passar do máximo permitido
+      if (delta > 0 && groupTotal >= group.max) {
+        return prev;
+      }
+
+      return { ...prev, [key]: nextQty };
+    });
+  };
+
+  // Grupos obrigatórios (min > 0) precisam atingir a quantidade mínima antes de liberar o pedido
+  const unmetRequiredGroups = optionGroups.filter(g => g.min > 0 && getGroupTotal(g) < g.min);
+  const canAddToCart = unmetRequiredGroups.length === 0;
+
+  // Calcula o preço unitário somando todos os itens de opção selecionados (qty x preço)
+  const optionsExtra = optionGroups.reduce((sum, group) => {
+    return sum + group.items.reduce((groupSum, item) => groupSum + getQty(group.id, item.id) * item.price, 0);
+  }, 0);
   const unitPrice = product.price + optionsExtra;
   const totalPrice = unitPrice * quantity;
 
-  const handleOptionSelect = (groupId: string, optionName: string, priceDelta: number = 0) => {
-    setSelectedOptions(prev => ({
-      ...prev,
-      [groupId]: { optionName, priceDelta }
-    }));
-  };
-
   const handleAddToCart = () => {
+    if (!canAddToCart) return;
+
     const formattedOptions: CartItemOption[] = [];
-    if (product.optionGroups) {
-      product.optionGroups.forEach(group => {
-        const selected = selectedOptions[group.id];
-        if (selected) {
+    optionGroups.forEach(group => {
+      group.items.forEach(item => {
+        const qty = getQty(group.id, item.id);
+        if (qty > 0) {
           formattedOptions.push({
             groupTitle: group.title,
-            optionName: selected.optionName,
-            priceDelta: selected.priceDelta
+            optionName: qty > 1 ? `${item.name} x${qty}` : item.name,
+            priceDelta: item.price * qty
           });
         }
       });
-    }
+    });
 
     addItem({
       productId: product.id,
@@ -138,72 +159,85 @@ export const ProductModal: React.FC = () => {
             </p>
           </div>
 
-          {/* Included combo items if present */}
-          {product.comboItems && (
-            <div className="bg-[#181824] rounded-2xl p-4 border border-zinc-800">
-              <div className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Itens inclusos no Combo:</span>
-              </div>
-              <ul className="space-y-1.5">
-                {product.comboItems.map((item, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-xs text-zinc-200">
-                    <Check className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* Grupos de opções (Ingredientes, Opcionais, Talheres, Bebidas) — réplica do Anota AI */}
+          {optionGroups.map((group) => {
+            const groupTotal = getGroupTotal(group);
+            const isSatisfied = group.min === 0 || groupTotal >= group.min;
 
-          {/* Custom Option Groups (Meat type, fries type, drinks, etc.) */}
-          {product.optionGroups && product.optionGroups.map((group) => (
-            <div key={group.id} className="space-y-3 pt-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-white uppercase tracking-wider">
-                  {group.title}
-                </span>
-                {group.required ? (
-                  <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full font-bold">
-                    Obrigatório
+            return (
+              <div key={group.id} className="space-y-3 pt-2 border-t border-zinc-800/60 first:border-t-0 first:pt-0">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <span className="text-xs font-bold text-white uppercase tracking-wider">
+                      {group.title}
+                    </span>
+                    <p className="text-[10.5px] text-zinc-400 mt-0.5">
+                      {group.min > 0
+                        ? `Escolha entre ${group.min} e ${group.max} itens`
+                        : `Escolha até ${group.max} itens`}
+                    </p>
+                  </div>
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap ${
+                    group.min > 0
+                      ? isSatisfied
+                        ? 'bg-emerald-500/15 text-emerald-400'
+                        : 'bg-amber-500/20 text-amber-300'
+                      : 'bg-zinc-800 text-zinc-400'
+                  }`}>
+                    {groupTotal}/{group.min > 0 ? `${group.min} a ${group.max}` : group.max}
                   </span>
-                ) : (
-                  <span className="text-[10px] text-zinc-500">Opcional</span>
-                )}
-              </div>
+                </div>
 
-              <div className="space-y-2">
-                {group.options.map((option) => {
-                  const isSelected = selectedOptions[group.id]?.optionName === option.name;
-                  return (
-                    <label
-                      key={option.id}
-                      onClick={() => handleOptionSelect(group.id, option.name, option.priceDelta || 0)}
-                      className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${
-                        isSelected
-                          ? 'bg-amber-500/15 border-amber-500 text-white'
-                          : 'bg-[#181822] border-zinc-800 text-zinc-300 hover:border-zinc-700'
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                          isSelected ? 'border-amber-400 bg-amber-400' : 'border-zinc-600'
-                        }`}>
-                          {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-black"></div>}
+                <div className="space-y-2">
+                  {group.items.map((item) => {
+                    const qty = getQty(group.id, item.id);
+                    const groupAtMax = groupTotal >= group.max;
+                    const itemAtMax = qty >= item.maxQuantity;
+
+                    return (
+                      <div
+                        key={item.id}
+                        className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                          qty > 0
+                            ? 'bg-amber-500/10 border-amber-500/40'
+                            : 'bg-[#181822] border-zinc-800'
+                        }`}
+                      >
+                        <div className="flex flex-col">
+                          <span className="text-xs sm:text-sm font-medium text-white">{item.name}</span>
+                          {item.price > 0 && (
+                            <span className="text-[11px] text-amber-400 font-bold">+{formatBRL(item.price)}</span>
+                          )}
                         </div>
-                        <span className="text-xs sm:text-sm font-medium">{option.name}</span>
+
+                        <div className="flex items-center gap-2.5 bg-[#1c1c26] border border-zinc-700 rounded-lg p-1">
+                          <button
+                            type="button"
+                            onClick={() => setQty(group, item.id, -1)}
+                            disabled={qty <= 0}
+                            aria-label={`Remover ${item.name}`}
+                            className="w-6 h-6 rounded-md bg-zinc-800 hover:bg-zinc-700 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <Minus className="w-3 h-3" />
+                          </button>
+                          <span className="text-xs font-bold text-white w-4 text-center">{qty}</span>
+                          <button
+                            type="button"
+                            onClick={() => setQty(group, item.id, 1)}
+                            disabled={itemAtMax || groupAtMax}
+                            aria-label={`Adicionar ${item.name}`}
+                            className="w-6 h-6 rounded-md bg-zinc-800 hover:bg-zinc-700 text-white flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                          >
+                            <Plus className="w-3 h-3" />
+                          </button>
+                        </div>
                       </div>
-                      {option.priceDelta && option.priceDelta > 0 ? (
-                        <span className="text-xs font-bold text-amber-400">
-                          +{formatBRL(option.priceDelta)}
-                        </span>
-                      ) : null}
-                    </label>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {/* Observations textarea */}
           <div className="space-y-2 pt-2">
@@ -236,8 +270,8 @@ export const ProductModal: React.FC = () => {
                 <ExternalLink className="w-3.5 h-3.5 opacity-80" />
               </a>
               <p className="text-[10.5px] text-zinc-400 text-center leading-snug px-1">
-                Você será redirecionado para pedir <strong className="text-amber-300">só este prato</strong> direto no Anota AI.
-                Quer pedir mais coisas junto? Adicione ao carrinho abaixo e feche{' '}
+                Você será redirecionado para pedir <strong className="text-amber-300">só este prato</strong> direto no Anota AI, com todos os complementos por lá.
+                Quer pedir mais coisas junto? Monte aqui abaixo e feche{' '}
                 <strong className="text-amber-300">o pedido completo pelo WhatsApp</strong>.
               </p>
             </div>
@@ -269,11 +303,12 @@ export const ProductModal: React.FC = () => {
             {/* Secondary CTA: add to cart, to combine with other dishes and finish on WhatsApp */}
             <button
               onClick={handleAddToCart}
-              className="flex-1 py-3 px-4 rounded-xl bg-[#1c1c26] hover:bg-[#23232f] border border-zinc-700 text-white font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-between transition-all transform active:scale-98"
+              disabled={!canAddToCart}
+              className="flex-1 py-3 px-4 rounded-xl bg-[#1c1c26] hover:bg-[#23232f] border border-zinc-700 text-white font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-between transition-all transform active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span className="flex items-center gap-2">
                 <ShoppingBag className="w-4 h-4 text-amber-400" />
-                <span>Adicionar ao Carrinho</span>
+                <span>{canAddToCart ? 'Adicionar ao Carrinho' : `Escolha ${unmetRequiredGroups[0]?.title.toLowerCase()}`}</span>
               </span>
               <span className="font-black text-amber-400">
                 {formatBRL(totalPrice)}

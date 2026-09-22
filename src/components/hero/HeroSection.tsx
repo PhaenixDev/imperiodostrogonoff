@@ -98,18 +98,15 @@ export const HeroSection: React.FC = () => {
 
           {/* Hero Visual Imagery Column */}
           <div className="lg:col-span-5 relative flex justify-center items-center">
-            
-            {/* Ambient decorative plate ring */}
-            <div className="relative w-[300px] h-[300px] sm:w-[420px] sm:h-[420px]">
-              <div className="absolute inset-0 rounded-full border border-amber-500/30 animate-[spin_60s_linear_infinite] pointer-events-none"></div>
-              <div className="absolute inset-4 rounded-full border-2 border-dashed border-amber-500/20 pointer-events-none"></div>
-              
-              {/* Circular Food Presentation Frame */}
-              <div className="w-full h-full rounded-full p-3 bg-gradient-to-tr from-amber-500/30 via-zinc-800 to-black/80 shadow-2xl overflow-hidden relative group">
+
+            <div className="relative w-full max-w-[420px]">
+
+              {/* Food Presentation Frame (normal rectangle, no circular mask) */}
+              <div className="w-full rounded-3xl p-2 bg-gradient-to-tr from-amber-500/30 via-zinc-800 to-black/80 shadow-2xl overflow-hidden relative group">
                 <img
-                  src="/images/menu/hero_strogonoff.webp"
+                  src="/images/menu/destaque_strogonoff.webp"
                   alt="Strogonoff Cremoso do Império com arroz e batata palha"
-                  className="w-full h-full object-cover rounded-full filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)] transform group-hover:scale-105 transition-transform duration-700"
+                  className="w-full h-auto rounded-2xl object-cover filter drop-shadow-[0_15px_25px_rgba(0,0,0,0.8)] transform group-hover:scale-105 transition-transform duration-700"
                 />
 
                 {/* Floating promo badge overlay */}

@@ -18,7 +18,7 @@ export const FinalCTA: React.FC = () => {
           {/* Subtle background food watermark */}
           <div className="absolute -right-16 -bottom-16 w-80 h-80 opacity-15 pointer-events-none rounded-full overflow-hidden">
             <img
-              src="/images/menu/hero_strogonoff.webp"
+              src="/images/menu/destaque_strogonoff.webp"
               alt=""
               className="w-full h-full object-cover"
             />

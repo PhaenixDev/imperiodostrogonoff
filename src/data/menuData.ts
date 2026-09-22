@@ -1,16 +1,22 @@
-export interface ProductOption {
+// Um item dentro de um grupo de opções (ex.: "Arroz Branco" dentro de "Ingredientes").
+// Réplica fiel do modelo do Anota AI: cada item tem sua própria quantidade máxima
+// (o cliente pode pedir a mesma coisa mais de uma vez, ex.: 2x Arroz Branco).
+export interface OptionItem {
   id: string;
   name: string;
-  priceDelta?: number;
+  price: number; // preço por unidade (0 quando o item não altera o valor do prato)
+  maxQuantity: number;
 }
 
+// Um grupo de opções (Ingredientes, Opcionais, Talheres, Bebidas...), com uma
+// quantidade mínima/máxima TOTAL de itens que podem ser selecionados no grupo
+// (soma das quantidades de todos os itens dentro dele) — igual ao Anota AI.
 export interface OptionGroup {
   id: string;
   title: string;
-  required: boolean;
-  minSelect?: number;
-  maxSelect?: number;
-  options: ProductOption[];
+  min: number; // 0 = grupo opcional; >0 = obrigatório escolher ao menos essa quantidade
+  max: number;
+  items: OptionItem[];
 }
 
 export interface Product {
@@ -26,9 +32,7 @@ export interface Product {
   description: string;
   image: string;
   highResImage?: string;
-  comboItems?: string[];
   optionGroups?: OptionGroup[];
-  isDessertPromo?: boolean;
 }
 
 export interface CategoryTab {
@@ -49,6 +53,64 @@ export const CATEGORIES: CategoryTab[] = [
 // Slug oficial da loja no cardápio pedido.anota.ai (usado para montar o link de pedido direto por prato)
 export const ANOTA_STORE_SLUG = 'imprio-do-strogonoff-1';
 
+// ============================================================================
+// GRUPOS DE OPÇÕES COMPARTILHADOS — extraídos fielmente do cardápio real do
+// Anota AI (mesmos grupos "Opcionais", "Talheres" e "Bebidas" reaparecem em
+// quase todos os pratos principais lá, com os mesmos itens, preços e limites).
+// ============================================================================
+
+const OPCIONAIS_PADRAO: OptionGroup = {
+  id: 'opcionais',
+  title: 'Opcionais',
+  min: 0,
+  max: 6,
+  items: [
+    { id: 'opc-farofa', name: 'Farofa Temperada', price: 5.00, maxQuantity: 6 },
+    { id: 'opc-feijao', name: 'Feijão Carioca', price: 8.00, maxQuantity: 6 },
+    { id: 'opc-arroz', name: 'Arroz Branco', price: 7.00, maxQuantity: 6 },
+    { id: 'opc-batata-frita', name: 'Batata Frita', price: 8.00, maxQuantity: 6 },
+    { id: 'opc-pure', name: 'Purê de Batata', price: 6.00, maxQuantity: 6 },
+    { id: 'opc-ovo', name: 'Ovo Frito', price: 3.00, maxQuantity: 6 },
+    { id: 'opc-batata-palha', name: 'Porção de Batata Palha', price: 3.00, maxQuantity: 6 },
+  ]
+};
+
+const TALHERES_PADRAO: OptionGroup = {
+  id: 'talheres',
+  title: 'Talheres',
+  min: 0,
+  max: 1,
+  items: [
+    { id: 'talh-unitario', name: 'Talheres Unitários', price: 0, maxQuantity: 1 },
+  ]
+};
+
+const BEBIDAS_PADRAO: OptionGroup = {
+  id: 'bebidas',
+  title: 'Bebidas',
+  min: 0,
+  max: 5,
+  items: [
+    { id: 'beb-coca-310', name: 'Coca-Cola 310ml', price: 8.00, maxQuantity: 5 },
+    { id: 'beb-coca-2l', name: 'Coca-Cola 2L', price: 15.00, maxQuantity: 5 },
+    { id: 'beb-coca-zero-2l', name: 'Coca-Cola Zero 2L', price: 15.00, maxQuantity: 5 },
+    { id: 'beb-guarana-2l', name: 'Refrigerante Guaraná Mineiro 2L', price: 12.00, maxQuantity: 5 },
+    { id: 'beb-coca-zero-lata', name: 'Coca-Cola Lata Zero 310ml', price: 8.00, maxQuantity: 5 },
+  ]
+};
+
+// "Frango em Tiras", no Anota AI, tem os mesmos itens de Opcionais/Bebidas
+// porém com o limite do grupo sobrescrito para 1 (peculiaridade real de lá).
+const OPCIONAIS_LIMITADO: OptionGroup = { ...OPCIONAIS_PADRAO, max: 1 };
+const BEBIDAS_LIMITADO: OptionGroup = { ...BEBIDAS_PADRAO, max: 1 };
+
+// Grupo "Ingredientes" compartilhado pela categoria usada em Frango à Milanesa
+// em Tiras, Frango em Tiras e Bife à Cavalo no Anota AI (mesma categoria lá).
+const INGREDIENTES_FRANGO_TIRAS_ITEMS = [
+  { id: 'ing-feijao', name: 'Feijão Carioca', price: 0, maxQuantity: 3 },
+  { id: 'ing-arroz-3', name: 'Arroz Branco', price: 0, maxQuantity: 3 },
+];
+
 export const MENU_PRODUCTS: Product[] = [
   // ================= DESTAQUES (Os Queridinhos) =================
   {
@@ -65,14 +127,19 @@ export const MENU_PRODUCTS: Product[] = [
     image: '/images/menu/destaque_parmegiana.webp',
     optionGroups: [
       {
-        id: 'ponto-batata',
-        title: 'Preferência da Batata',
-        required: false,
-        options: [
-          { id: 'batata-palito', name: 'Batata Palito Dourada', priceDelta: 0 },
-          { id: 'batata-rustica', name: 'Batata Rústica Temperada', priceDelta: 0 }
+        id: 'ingredientes',
+        title: 'Ingredientes',
+        min: 1,
+        max: 3,
+        items: [
+          { id: 'ing-parmegiana', name: 'Frango à Parmegiana', price: 0, maxQuantity: 3 },
+          { id: 'ing-arroz-parm', name: 'Arroz Branco', price: 0, maxQuantity: 3 },
+          { id: 'ing-batata-frita-parm', name: 'Batata Frita', price: 0, maxQuantity: 3 },
         ]
-      }
+      },
+      OPCIONAIS_PADRAO,
+      TALHERES_PADRAO,
+      BEBIDAS_PADRAO
     ]
   },
   {
@@ -89,23 +156,19 @@ export const MENU_PRODUCTS: Product[] = [
     image: '/images/menu/destaque_strogonoff.webp',
     optionGroups: [
       {
-        id: 'tipo-carne',
-        title: 'Escolha a sua carne',
-        required: true,
-        options: [
-          { id: 'frango', name: 'Frango em cubos suculento', priceDelta: 0 },
-          { id: 'carne', name: 'Carne bovina macia (+ R$ 7,00)', priceDelta: 7.00 }
+        id: 'ingredientes',
+        title: 'Ingredientes',
+        min: 1,
+        max: 3,
+        items: [
+          { id: 'ing-arroz-pure', name: 'Arroz Branco', price: 0, maxQuantity: 3 },
+          { id: 'ing-pure', name: 'Purê de Batata', price: 0, maxQuantity: 3 },
+          { id: 'ing-batata-palha-pure', name: 'Porção de Batata Palha', price: 0, maxQuantity: 3 },
         ]
       },
-      {
-        id: 'extra-batata-palha',
-        title: 'Porção Extra',
-        required: false,
-        options: [
-          { id: 'extra-palha', name: 'Batata palha extra crocante', priceDelta: 4.50 },
-          { id: 'extra-queijo', name: 'Adicional de queijo derretido', priceDelta: 5.00 }
-        ]
-      }
+      OPCIONAIS_PADRAO,
+      TALHERES_PADRAO,
+      BEBIDAS_PADRAO
     ]
   },
   {
@@ -119,7 +182,8 @@ export const MENU_PRODUCTS: Product[] = [
     discountBadge: '-37%',
     isPopular: true,
     description: 'Uma refeição caseira completa preparada diariamente com muito carinho e sabor. Acompanha arroz, feijão fresquinho, ovo frito com gema perfeita e salada.',
-    image: '/images/menu/destaque_prato_dia.webp'
+    image: '/images/menu/destaque_prato_dia.webp',
+    optionGroups: [OPCIONAIS_PADRAO, TALHERES_PADRAO, BEBIDAS_PADRAO]
   },
   {
     id: 'destaque-batata-cheddar-bacon',
@@ -132,7 +196,8 @@ export const MENU_PRODUCTS: Product[] = [
     discountBadge: '-14%',
     isPopular: true,
     description: 'Batatas fritas douradas e super crocantes, cobertas generosamente com cheddar cremoso derretido e pedacinhos crocantes de bacon.',
-    image: '/images/menu/destaque_batata_cheddar.webp'
+    image: '/images/menu/destaque_batata_cheddar.webp',
+    optionGroups: [BEBIDAS_PADRAO]
   },
   {
     id: 'destaque-frango-milanesa-tiras',
@@ -143,7 +208,13 @@ export const MENU_PRODUCTS: Product[] = [
     price: 24.90,
     isPopular: true,
     description: 'Tiras de frango selecionadas, empanadas artesanalmente, douradas e crocantes por fora e macias por dentro. Acompanha arroz, feijão e salada.',
-    image: '/images/menu/destaque_frango_milanesa.webp'
+    image: '/images/menu/destaque_frango_milanesa.webp',
+    optionGroups: [
+      { id: 'ingredientes', title: 'Ingredientes', min: 1, max: 3, items: INGREDIENTES_FRANGO_TIRAS_ITEMS },
+      OPCIONAIS_PADRAO,
+      TALHERES_PADRAO,
+      BEBIDAS_PADRAO
+    ]
   },
 
   // ================= PRATOS DE CARNE =================
@@ -155,7 +226,21 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'carnes',
     price: 29.90,
     description: 'Carne macia, molho cremoso e sabor que conquista na primeira garfada. Acompanha arroz, batata palha e salada.',
-    image: '/images/menu/carne_strogonoff.webp'
+    image: '/images/menu/carne_strogonoff.webp',
+    optionGroups: [
+      {
+        id: 'ingredientes',
+        title: 'Ingredientes',
+        min: 1,
+        max: 2,
+        items: [
+          { id: 'ing-arroz-carne', name: 'Arroz Branco', price: 0, maxQuantity: 2 },
+        ]
+      },
+      OPCIONAIS_PADRAO,
+      TALHERES_PADRAO,
+      BEBIDAS_PADRAO
+    ]
   },
   {
     id: 'carne-bife-cavalo',
@@ -165,7 +250,13 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'carnes',
     price: 29.90,
     description: 'Bife bovino macio e suculento, preparado na chapa e finalizado com um delicioso ovo frito. Acompanha arroz, feijão, batata e salada.',
-    image: '/images/menu/carne_bife_cavalo.webp'
+    image: '/images/menu/carne_bife_cavalo.webp',
+    optionGroups: [
+      { id: 'ingredientes', title: 'Ingredientes', min: 0, max: 3, items: INGREDIENTES_FRANGO_TIRAS_ITEMS },
+      OPCIONAIS_PADRAO,
+      TALHERES_PADRAO,
+      BEBIDAS_PADRAO
+    ]
   },
 
   // ================= PRATOS DE FRANGO =================
@@ -177,7 +268,22 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'frango',
     price: 19.90,
     description: 'Frango em cubos, molho cremoso e muito sabor. Acompanha arroz, batata palha e salada.',
-    image: '/images/menu/frango_strogonoff.webp'
+    image: '/images/menu/frango_strogonoff.webp',
+    optionGroups: [
+      {
+        id: 'ingredientes',
+        title: 'Ingredientes',
+        min: 1,
+        max: 2,
+        items: [
+          { id: 'ing-arroz-frango-strog', name: 'Arroz Branco', price: 0, maxQuantity: 2 },
+          { id: 'ing-batata-palha-frango-strog', name: 'Porção de Batata Palha', price: 0, maxQuantity: 2 },
+        ]
+      },
+      OPCIONAIS_PADRAO,
+      TALHERES_PADRAO,
+      BEBIDAS_PADRAO
+    ]
   },
   {
     id: 'frango-parmegiana',
@@ -187,7 +293,23 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'frango',
     price: 29.90,
     description: 'Filé de frango empanado, dourado e crocante, coberto com molho de tomate e queijo. Acompanha arroz, batata e salada.',
-    image: '/images/menu/frango_parmegiana.webp'
+    image: '/images/menu/frango_parmegiana.webp',
+    optionGroups: [
+      {
+        id: 'ingredientes',
+        title: 'Ingredientes',
+        min: 1,
+        max: 3,
+        items: [
+          { id: 'ing-parmegiana-2', name: 'Frango à Parmegiana', price: 0, maxQuantity: 3 },
+          { id: 'ing-arroz-parm-2', name: 'Arroz Branco', price: 0, maxQuantity: 3 },
+          { id: 'ing-batata-frita-parm-2', name: 'Batata Frita', price: 0, maxQuantity: 3 },
+        ]
+      },
+      OPCIONAIS_PADRAO,
+      TALHERES_PADRAO,
+      BEBIDAS_PADRAO
+    ]
   },
   {
     id: 'frango-tiras',
@@ -197,7 +319,13 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'frango',
     price: 24.90,
     description: 'Tiras de frango macias e douradas, preparadas na medida certa. Acompanha arroz, feijão e salada.',
-    image: '/images/menu/frango_tiras.webp'
+    image: '/images/menu/frango_tiras.webp',
+    optionGroups: [
+      { id: 'ingredientes', title: 'Ingredientes', min: 1, max: 3, items: INGREDIENTES_FRANGO_TIRAS_ITEMS },
+      OPCIONAIS_LIMITADO,
+      TALHERES_PADRAO,
+      BEBIDAS_LIMITADO
+    ]
   },
   {
     id: 'frango-milanesa',
@@ -207,7 +335,13 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'frango',
     price: 24.90,
     description: 'Filé de frango empanado, crocante e saboroso. Acompanha arroz, feijão e salada.',
-    image: '/images/menu/frango_milanesa.webp'
+    image: '/images/menu/frango_milanesa.webp',
+    optionGroups: [
+      { id: 'ingredientes', title: 'Ingredientes', min: 1, max: 3, items: INGREDIENTES_FRANGO_TIRAS_ITEMS },
+      OPCIONAIS_PADRAO,
+      TALHERES_PADRAO,
+      BEBIDAS_PADRAO
+    ]
   },
 
   // ================= PORÇÕES =================
@@ -219,7 +353,8 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'porcoes',
     price: 19.90,
     description: 'Porção média de batatas palito sequinhas, quentes e crocantes.',
-    image: '/images/menu/porcao_batata_m.webp'
+    image: '/images/menu/porcao_batata_m.webp',
+    optionGroups: [BEBIDAS_PADRAO]
   },
   {
     id: 'porcao-batata-g',
@@ -229,7 +364,8 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'porcoes',
     price: 29.90,
     description: 'Porção grande e generosa, perfeita para compartilhar com a família ou amigos.',
-    image: '/images/menu/porcao_batata_g.webp'
+    image: '/images/menu/porcao_batata_g.webp',
+    optionGroups: [BEBIDAS_PADRAO]
   },
   {
     id: 'porcao-cheddar-bacon-m',
@@ -239,7 +375,8 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'porcoes',
     price: 29.90,
     description: 'Batatas fritas douradas cobertas com queijo cheddar cremoso e cubinhos crocantes de bacon (tamanho M).',
-    image: '/images/menu/porcao_cheddar_m.webp'
+    image: '/images/menu/porcao_cheddar_m.webp',
+    optionGroups: [BEBIDAS_PADRAO]
   },
   {
     id: 'porcao-cheddar-bacon-g',
@@ -249,7 +386,8 @@ export const MENU_PRODUCTS: Product[] = [
     category: 'porcoes',
     price: 39.90,
     description: 'A porção definitiva: super fartura de batatas com muito cheddar derretido e bacon crocante (tamanho G).',
-    image: '/images/menu/porcao_cheddar_g.webp'
+    image: '/images/menu/porcao_cheddar_g.webp',
+    optionGroups: [BEBIDAS_PADRAO]
   },
 
   // ================= BEBIDAS =================
