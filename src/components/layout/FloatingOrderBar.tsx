@@ -15,7 +15,7 @@ export const FloatingOrderBar: React.FC = () => {
           
           {/* Quick Direct WhatsApp Support / Order Button */}
           <a
-            href={`https://wa.me/${RESTAURANT_CONFIG.whatsappNumber}?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20no%20Imp%C3%A9rio%20do%20Strogonofe!`}
+            href={`https://wa.me/${RESTAURANT_CONFIG.whatsappNumber}?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20no%20Imp%C3%A9rio%20do%20Strogonoff!`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-13 h-13 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center shadow-lg active:scale-95 shrink-0 border border-emerald-400/30 p-3.5"
@@ -74,7 +74,7 @@ export const FloatingOrderBar: React.FC = () => {
 
         {/* WhatsApp Direct Floating Pill */}
         <a
-          href={`https://wa.me/${RESTAURANT_CONFIG.whatsappNumber}?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20no%20Imp%C3%A9rio%20do%20Strogonofe`}
+          href={`https://wa.me/${RESTAURANT_CONFIG.whatsappNumber}?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20no%20Imp%C3%A9rio%20do%20Strogonoff`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2.5 px-4 py-3 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg hover:shadow-emerald-500/30 transition-all transform hover:-translate-y-0.5 border border-emerald-400/30 group"

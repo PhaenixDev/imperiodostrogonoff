@@ -2,6 +2,8 @@ import React from 'react';
 import { X, Trash2, Plus, Minus, Send, ShoppingBag, Bike, Store, ShieldCheck, MapPin, Loader2 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { formatBRL } from '../../services/whatsappService';
+import { ProductImage } from '../menu/ProductImage';
+import { PaymentMethodPicker } from './PaymentMethodPicker';
 
 export const CartDrawer: React.FC = () => {
   const {
@@ -12,7 +14,6 @@ export const CartDrawer: React.FC = () => {
     updateQuantity,
     clearCart,
     subtotal,
-    deliveryFee,
     total,
     orderType,
     setOrderType,
@@ -30,6 +31,7 @@ export const CartDrawer: React.FC = () => {
     setAddressComplement,
     deliveryDistance,
     isCalculatingDistance,
+    paymentError,
     checkoutWhatsApp
   } = useCart();
 
@@ -38,7 +40,7 @@ export const CartDrawer: React.FC = () => {
   const isDelivery = orderType === 'delivery';
   const missingDeliveryFields = isDelivery && (!addressStreet.trim() || !addressNumber.trim() || !addressNeighborhood.trim());
   const missingContactFields = !customerName.trim() || !customerPhone.trim();
-  const canCheckout = !missingContactFields && !missingDeliveryFields;
+  const canCheckout = !missingContactFields && !missingDeliveryFields && !paymentError;
 
   const inputClasses = "w-full bg-[#181822] border border-zinc-800 focus:border-amber-500 rounded-lg px-3 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-amber-500";
 
@@ -105,9 +107,10 @@ export const CartDrawer: React.FC = () => {
                       className="bg-[#171720] border border-zinc-800/90 rounded-2xl p-3.5 flex gap-3 items-start justify-between group"
                     >
                       {/* Product thumbnail */}
-                      <img
+                      <ProductImage
                         src={item.image}
                         alt={item.name}
+                        compact
                         className="w-14 h-14 rounded-xl object-cover bg-black shrink-0 border border-zinc-800"
                       />
 
@@ -187,7 +190,7 @@ export const CartDrawer: React.FC = () => {
                       }`}
                     >
                       <Bike className="w-4 h-4" />
-                      <span>Entrega (+ R$ 5,00)</span>
+                      <span>Entrega</span>
                     </button>
                     <button
                       type="button"
@@ -278,6 +281,9 @@ export const CartDrawer: React.FC = () => {
                   )}
                 </div>
 
+                {/* Payment Method (required) */}
+                <PaymentMethodPicker />
+
                 {/* Clear Cart Button */}
                 <div className="pt-2 text-right">
                   <button
@@ -303,11 +309,11 @@ export const CartDrawer: React.FC = () => {
                 <div className="flex items-center justify-between text-xs text-zinc-400">
                   <span>Taxa de entrega:</span>
                   <span className="text-amber-400 font-semibold">
-                    {orderType === 'delivery' ? formatBRL(deliveryFee) : 'Grátis (Retirada)'}
+                    {orderType === 'delivery' ? 'Consultar pelo WhatsApp' : 'Grátis (Retirada)'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-base font-black text-white pt-2 border-t border-zinc-800">
-                  <span>Total estimado:</span>
+                  <span>Total dos produtos:</span>
                   <span className="text-xl text-gold-gradient font-black">{formatBRL(total)}</span>
                 </div>
               </div>
@@ -325,8 +331,10 @@ export const CartDrawer: React.FC = () => {
               <p className="text-[10.5px] text-zinc-400 text-center leading-snug px-2">
                 {canCheckout ? (
                   <>Vamos abrir o WhatsApp com <strong className="text-emerald-300">todos os itens do seu carrinho já prontos na mensagem</strong> — você só confere e envia.</>
-                ) : (
+                ) : missingContactFields || missingDeliveryFields ? (
                   <span className="text-amber-400">Preencha seus dados {isDelivery ? 'e o endereço de entrega ' : ''}acima para continuar.</span>
+                ) : (
+                  <span className="text-amber-400">{paymentError}</span>
                 )}
               </p>
 

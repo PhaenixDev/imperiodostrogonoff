@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { CATEGORIES } from '../../data/menuData';
-import { Flame, Utensils, Beef, Drumstick, CookingPot, Coffee, Cake } from 'lucide-react';
+import { Beef, Drumstick, BadgePercent } from 'lucide-react';
 
 interface CategoryNavigationProps {
   activeCategory: string;
@@ -15,13 +15,9 @@ export const CategoryNavigation: React.FC<CategoryNavigationProps> = ({
 
   const getIcon = (iconName: string) => {
     switch (iconName) {
-      case 'Flame': return <Flame className="w-4 h-4" />;
-      case 'Utensils': return <Utensils className="w-4 h-4" />;
-      case 'Beef': return <Beef className="w-4 h-4" />;
       case 'Drumstick': return <Drumstick className="w-4 h-4" />;
-      case 'CookingPot': return <CookingPot className="w-4 h-4" />;
-      case 'Coffee': return <Coffee className="w-4 h-4" />;
-      case 'Cake': return <Cake className="w-4 h-4" />;
+      case 'Beef': return <Beef className="w-4 h-4" />;
+      case 'BadgePercent': return <BadgePercent className="w-4 h-4" />;
       default: return null;
     }
   };

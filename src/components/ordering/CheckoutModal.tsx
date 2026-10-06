@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, Bike, Store, CreditCard, User, AlertCircle, Loader2, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
+import { X, CheckCircle2, Bike, Store, User, AlertCircle, Loader2, Sparkles, MessageCircle, ArrowRight } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { formatBRL } from '../../services/whatsappService';
 import { RESTAURANT_CONFIG } from '../../config/restaurantConfig';
+import { PaymentMethodPicker } from './PaymentMethodPicker';
 
 export const CheckoutModal: React.FC = () => {
   const {
     items,
     subtotal,
-    deliveryFee,
     total,
     isCheckoutModalOpen,
     setIsCheckoutModalOpen,
@@ -28,8 +28,7 @@ export const CheckoutModal: React.FC = () => {
     setAddressComplement,
     customerNotes,
     setCustomerNotes,
-    paymentMethod,
-    setPaymentMethod,
+    paymentError,
     isSubmittingOrder,
     orderResult,
     orderError,
@@ -78,6 +77,11 @@ export const CheckoutModal: React.FC = () => {
       }
     }
 
+    if (paymentError) {
+      setValidationError(paymentError);
+      return;
+    }
+
     await submitOrder();
   };
 
@@ -112,7 +116,7 @@ export const CheckoutModal: React.FC = () => {
                 PEDIDO CONFIRMADO!
               </h2>
               <p className="text-xs sm:text-sm text-zinc-300 max-w-md mx-auto">
-                Seu pedido já foi enviado diretamente para a cozinha do <strong>Império do Strogonofe</strong> e está sendo preparado no capricho.
+                Seu pedido já foi enviado diretamente para a cozinha do <strong>Império do Strogonoff</strong> e está sendo preparado no capricho.
               </p>
             </div>
 
@@ -189,7 +193,7 @@ export const CheckoutModal: React.FC = () => {
                   Finalizar Pedido Oficial
                 </h3>
                 <p className="text-[11px] text-zinc-400">
-                  Preencha seus dados para envio direto à cozinha do Império do Strogonofe.
+                  Preencha seus dados para envio direto à cozinha do Império do Strogonoff.
                 </p>
               </div>
             </div>
@@ -343,24 +347,8 @@ export const CheckoutModal: React.FC = () => {
                 )}
               </div>
 
-              {/* Step 3: Payment Method */}
-              <div className="space-y-2 pt-2 border-t border-zinc-800/80">
-                <span className="text-xs font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
-                  <CreditCard className="w-3.5 h-3.5" />
-                  <span>3. Forma de Pagamento</span>
-                </span>
-
-                <select
-                  value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full bg-[#181824] border border-zinc-800 focus:border-amber-500 rounded-xl p-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
-                >
-                  <option value="PIX na Entrega">PIX (Chave enviada na confirmação do pedido)</option>
-                  <option value="Cartão de Crédito na Entrega">Cartão de Crédito (Levar maquininha)</option>
-                  <option value="Cartão de Débito na Entrega">Cartão de Débito (Levar maquininha)</option>
-                  <option value="Dinheiro">Dinheiro (Pagamento em espécie)</option>
-                </select>
-              </div>
+              {/* Step 3: Payment Method (mesmo seletor do carrinho) */}
+              <PaymentMethodPicker />
 
               {/* Step 4: Observations */}
               <div className="space-y-1.5 pt-2 border-t border-zinc-800/80">
@@ -371,7 +359,7 @@ export const CheckoutModal: React.FC = () => {
                   type="text"
                   value={customerNotes}
                   onChange={(e) => setCustomerNotes(e.target.value)}
-                  placeholder="Ex: sem cebola, ponto da carne, troco para R$ 50..."
+                  placeholder="Ex: sem cebola, ponto da carne..."
                   className="w-full bg-[#181824] border border-zinc-800 focus:border-amber-500 rounded-xl p-3 text-xs text-white placeholder-zinc-500 focus:outline-none"
                 />
               </div>
@@ -388,11 +376,11 @@ export const CheckoutModal: React.FC = () => {
                 <div className="flex justify-between text-zinc-400">
                   <span>Taxa de Entrega:</span>
                   <span className="text-amber-400 font-semibold">
-                    {orderType === 'delivery' ? formatBRL(deliveryFee) : 'Grátis (Retirada)'}
+                    {orderType === 'delivery' ? 'Consultar pelo WhatsApp' : 'Grátis (Retirada)'}
                   </span>
                 </div>
                 <div className="flex justify-between text-base font-black text-white pt-1 border-t border-zinc-800">
-                  <span>Total do Pedido:</span>
+                  <span>Total dos produtos:</span>
                   <span className="text-xl text-gold-gradient font-black">{formatBRL(total)}</span>
                 </div>
               </div>

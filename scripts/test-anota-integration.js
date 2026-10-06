@@ -22,25 +22,22 @@ const sampleOrder = {
   },
   items: [
     {
-      productId: 'destaque-strogonoff',
-      externalId: 'IMP-STROG-CREMOSO',
-      name: 'Strogonoff Cremoso',
+      productId: 'carne-strogonoff',
+      externalId: 'IMP-CARNE-STROG',
+      name: 'Strogonoff de Carne',
       unitPrice: 29.90,
       quantity: 2,
       notes: 'Caprichar na batata palha',
       selectedOptions: [
-        { groupTitle: 'Proteína', optionName: 'Carne bovina macia', priceDelta: 7.00 }
+        { groupTitle: 'Talheres', optionName: 'Talheres Unitários', priceDelta: 0 }
       ]
     },
     {
-      productId: 'combo-parmegiana',
-      externalId: 'IMP-COMBO-PARMEGIANA',
-      name: 'Combo Parmegiana',
-      unitPrice: 39.90,
-      quantity: 1,
-      selectedOptions: [
-        { groupTitle: 'Bebida', optionName: 'Coca-Cola Tradicional 310ml', priceDelta: 0 }
-      ]
+      productId: 'combo-parmegiana-coca-lata',
+      externalId: 'IMP-COMBO-PARMEGIANA-COCA',
+      name: 'Combo à Parmegiana + Coca Lata',
+      unitPrice: 33.90,
+      quantity: 1
     }
   ],
   orderType: 'delivery',
@@ -54,9 +51,9 @@ const sampleOrder = {
   },
   paymentMethod: 'PIX na Entrega',
   notes: 'Por favor avisar quando estiver saindo',
-  subtotal: 99.70,
-  deliveryFee: 5.00,
-  total: 104.70
+  subtotal: 93.70,
+  deliveryFee: 0, // taxa de entrega é consultada pelo WhatsApp
+  total: 93.70
 };
 
 // 1. Testa transformação para schema Anota AI
@@ -69,9 +66,9 @@ assert.strictEqual(anotaPayload.order_type, 'DELIVERY');
 assert.strictEqual(anotaPayload.customer.name, 'Carlos Oliveira');
 assert.strictEqual(anotaPayload.customer.phone, '11988887777');
 assert.strictEqual(anotaPayload.items.length, 2);
-assert.strictEqual(anotaPayload.items[0].external_id, 'IMP-STROG-CREMOSO');
+assert.strictEqual(anotaPayload.items[0].external_id, 'IMP-CARNE-STROG');
 assert.strictEqual(anotaPayload.items[0].total_price, 5980); // em centavos
-assert.strictEqual(anotaPayload.payment.total, 10470); // em centavos
+assert.strictEqual(anotaPayload.payment.total, 9370); // em centavos
 
 console.log('\n--- TEST 2: Submissão de Pedido em Modo Sandbox ---');
 async function runSubmitTest() {

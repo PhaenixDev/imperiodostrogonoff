@@ -4,7 +4,7 @@ import { MENU_PRODUCTS } from '../../data/menuData';
 import { ProductCard } from './ProductCard';
 
 export const FeaturedSection: React.FC = () => {
-  const featuredProducts = MENU_PRODUCTS.filter(p => p.category === 'destaques');
+  const featuredProducts = MENU_PRODUCTS.filter(p => p.isPopular);
 
   return (
     <section id="secao-destaques" className="py-16 sm:py-20 relative">
@@ -33,8 +33,8 @@ export const FeaturedSection: React.FC = () => {
           </div>
         </div>
 
-        {/* Products Grid (5 items) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5">
+        {/* Products Grid (pratos marcados com isPopular no cardápio) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {featuredProducts.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

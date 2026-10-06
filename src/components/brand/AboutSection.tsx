@@ -12,7 +12,7 @@ export const AboutSection: React.FC = () => {
             <div className="relative rounded-3xl overflow-hidden border-2 border-amber-500/30 shadow-2xl bg-black">
               <img
                 src="/images/menu/destaque_strogonoff.webp"
-                alt="Prato tradicional do Império do Strogonofe"
+                alt="Prato tradicional do Império do Strogonoff"
                 className="w-full h-80 sm:h-96 object-cover filter brightness-95"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black via-black/30 to-transparent"></div>
@@ -49,7 +49,7 @@ export const AboutSection: React.FC = () => {
             </h2>
 
             <p className="text-zinc-300 text-base sm:text-lg leading-relaxed">
-              No <strong>Império do Estrogonofe</strong>, cada receita nasce da paixão pela autêntica culinária caseira brasileira. Não servimos apenas uma refeição: entregamos momentos de aconchego, generosidade e sabor inesquecível a cada garfada.
+              No <strong>Império do Strogonoff</strong>, cada receita nasce da paixão pela autêntica culinária caseira brasileira. Não servimos apenas uma refeição: entregamos momentos de aconchego, generosidade e sabor inesquecível a cada garfada.
             </p>
 
             <p className="text-zinc-400 text-sm leading-relaxed">

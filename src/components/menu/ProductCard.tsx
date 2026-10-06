@@ -1,8 +1,9 @@
 import React from 'react';
 import { Plus, Flame } from 'lucide-react';
-import type { Product } from '../../data/menuData';
+import { getAccompanimentsLabel, type Product } from '../../data/menuData';
 import { formatBRL } from '../../services/whatsappService';
 import { useCart } from '../../context/CartContext';
+import { ProductImage } from './ProductImage';
 
 interface ProductCardProps {
   product: Product;
@@ -18,7 +19,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     >
       {/* Top Image Container */}
       <div className="relative w-full h-44 sm:h-48 overflow-hidden bg-black/60 flex items-center justify-center">
-        
+
         {/* Badges Overlay */}
         <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1.5">
           {product.discountBadge && (
@@ -35,7 +36,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </div>
 
         {/* Product Food Photo */}
-        <img
+        <ProductImage
           src={product.image}
           alt={product.name}
           loading="lazy"
@@ -58,6 +59,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           <p className="text-xs text-zinc-400 line-clamp-2 mt-1.5 font-normal leading-relaxed">
             {product.description}
           </p>
+
+          {product.accompaniments.length > 0 && (
+            <p className="text-xs text-zinc-300 mt-2 leading-relaxed">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/90 mr-1.5">
+                {getAccompanimentsLabel(product)}
+              </span>
+              {product.accompaniments.join(' • ')}
+            </p>
+          )}
         </div>
 
         {/* Pricing & Add Button Footer */}

@@ -3,8 +3,9 @@ import { X, Plus, Minus, ShoppingBag, Zap, ExternalLink } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { formatBRL } from '../../services/whatsappService';
 import type { CartItemOption } from '../../services/whatsappService';
-import type { OptionGroup } from '../../data/menuData';
+import { getAccompanimentsLabel, type OptionGroup } from '../../data/menuData';
 import { getAnotaOrderUrl } from '../../services/anotaLink';
+import { ProductImage } from '../menu/ProductImage';
 
 // Chave composta para localizar a quantidade de um item dentro do seu grupo
 function qtyKey(groupId: string, itemId: string) {
@@ -134,7 +135,7 @@ export const ProductModal: React.FC = () => {
 
         {/* Product Image Header */}
         <div className="relative h-56 sm:h-64 w-full bg-black flex items-center justify-center overflow-hidden">
-          <img
+          <ProductImage
             src={product.image}
             alt={product.name}
             className="w-full h-full object-cover"
@@ -157,9 +158,27 @@ export const ProductModal: React.FC = () => {
             <p className="text-xs sm:text-sm text-zinc-300 mt-2 leading-relaxed">
               {product.description}
             </p>
+
+            {product.accompaniments.length > 0 && (
+              <div className="mt-4">
+                <span className="text-xs font-bold text-white uppercase tracking-wider">
+                  {getAccompanimentsLabel(product)}
+                </span>
+                <ul className="mt-2 flex flex-wrap gap-2">
+                  {product.accompaniments.map(item => (
+                    <li
+                      key={item}
+                      className="text-[11px] sm:text-xs text-amber-100 bg-amber-500/10 border border-amber-500/30 rounded-full px-3 py-1"
+                    >
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
-          {/* Grupos de opções (Ingredientes, Opcionais, Talheres, Bebidas) — réplica do Anota AI */}
+          {/* Grupos de opções (Opcionais, Talheres, Bebidas) — réplica do Anota AI */}
           {optionGroups.map((group) => {
             const groupTotal = getGroupTotal(group);
             const isSatisfied = group.min === 0 || groupTotal >= group.min;

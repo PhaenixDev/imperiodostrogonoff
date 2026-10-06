@@ -21,7 +21,7 @@ export const Footer: React.FC = () => {
               <div className="w-12 h-12 rounded-full border border-amber-500/40 p-0.5 bg-[#0a0a0c] flex items-center justify-center overflow-hidden shadow-gold-glow">
                 <img
                   src="/images/menu/logo.webp"
-                  alt="Logo Império do Strogonofe"
+                  alt="Logo Império do Strogonoff"
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -30,7 +30,7 @@ export const Footer: React.FC = () => {
                   Império
                 </span>
                 <span className="font-serif font-black tracking-wider text-sm text-gold-gradient uppercase block">
-                  do Strogonofe
+                  do Strogonoff
                 </span>
               </div>
             </div>

@@ -1,5 +1,5 @@
 /**
- * Configurações Gerais do Restaurante "Império do Estrogonofe"
+ * Configurações Gerais do Restaurante "Império do Strogonoff"
  * 
  * NOTA DE SEGURANÇA E DADOS:
  * Conforme diretrizes do projeto, nenhum dado de contato real foi inventado.
@@ -49,7 +49,7 @@ export interface RestaurantConfig {
 }
 
 export const RESTAURANT_CONFIG: RestaurantConfig = {
-  name: "Império do Estrogonofe",
+  name: "Império do Strogonoff",
   tagline: "Sabor, qualidade e muito mais para o seu dia!",
   
   // NÚMERO DO WHATSAPP:
@@ -65,7 +65,7 @@ export const RESTAURANT_CONFIG: RestaurantConfig = {
   },
 
   openingHours: {
-    days: "Terça a Domingo",
+    days: "Segunda a Domingo",
     hours: "11:00 às 23:00",
     deliveryTime: "30 a 50 min"
   },

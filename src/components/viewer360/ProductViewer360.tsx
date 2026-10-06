@@ -1,20 +1,28 @@
 import React, { useState } from 'react';
 import { Film, ShoppingBag } from 'lucide-react';
-import { PRODUCTS_360, MENU_PRODUCTS } from '../../data/menuData';
+import { SHOWCASE_PRODUCTS, MENU_PRODUCTS, CATEGORIES } from '../../data/menuData';
 import { formatBRL } from '../../services/whatsappService';
 import { useCart } from '../../context/CartContext';
+import { ProductImage } from '../menu/ProductImage';
+
+// Junta os dados da vitrine (vídeo, frase) com o produto real do cardápio:
+// nome, preço e categoria exibidos aqui são sempre os mesmos do pedido.
+const SHOWCASE = SHOWCASE_PRODUCTS.flatMap(showcase => {
+  const product = MENU_PRODUCTS.find(p => p.id === showcase.productId);
+  if (!product) return [];
+  const categoryLabel = CATEGORIES.find(c => c.id === product.category)?.label ?? '';
+  return [{ ...showcase, product, categoryLabel }];
+});
 
 export const ProductViewer360: React.FC = () => {
-  const [activeProductId, setActiveProductId] = useState(PRODUCTS_360[0].id);
+  const [activeProductId, setActiveProductId] = useState(SHOWCASE[0].product.id);
   const { openProductModal } = useCart();
 
-  const currentProduct = PRODUCTS_360.find(p => p.id === activeProductId) || PRODUCTS_360[0];
-  const fullProduct = MENU_PRODUCTS.find(p => p.id === activeProductId);
+  const current = SHOWCASE.find(s => s.product.id === activeProductId) || SHOWCASE[0];
+  const currentProduct = current.product;
 
   const handleOrder = () => {
-    if (fullProduct) {
-      openProductModal(fullProduct);
-    }
+    openProductModal(currentProduct);
   };
 
   return (
@@ -42,7 +50,7 @@ export const ProductViewer360: React.FC = () => {
 
           {/* Product Switcher Tabs */}
           <div className="flex flex-wrap justify-center gap-2 pt-4">
-            {PRODUCTS_360.map((p) => {
+            {SHOWCASE.map(({ product: p }) => {
               const isActive = p.id === activeProductId;
               return (
                 <button
@@ -67,23 +75,22 @@ export const ProductViewer360: React.FC = () => {
           {/* Dish Video / Image Showcase */}
           <div className="w-full flex items-center justify-center my-2">
             <div className="relative w-full max-w-md">
-              {currentProduct.video ? (
+              {current.video ? (
                 <video
-                  key={currentProduct.video}
+                  key={current.video}
                   autoPlay
                   loop
                   muted
                   playsInline
-                  poster={currentProduct.videoPoster}
+                  poster={current.videoPoster}
                   className="w-full h-auto rounded-2xl shadow-[0_25px_40px_rgba(0,0,0,0.85)] border border-amber-500/30"
                 >
-                  <source src={currentProduct.video} type="video/mp4" />
+                  <source src={current.video} type="video/mp4" />
                 </video>
               ) : (
-                <img
+                <ProductImage
                   src={currentProduct.image}
                   alt={currentProduct.name}
-                  draggable={false}
                   className="w-full h-auto rounded-2xl shadow-[0_25px_40px_rgba(0,0,0,0.85)] border border-amber-500/30"
                 />
               )}
@@ -94,13 +101,13 @@ export const ProductViewer360: React.FC = () => {
           <div className="pt-6 border-t border-zinc-800/80 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="text-center sm:text-left">
               <span className="text-xs uppercase tracking-wider text-amber-400 font-semibold">
-                {currentProduct.category}
+                {current.categoryLabel}
               </span>
               <h3 className="text-xl sm:text-2xl font-serif font-black text-white">
                 {currentProduct.name}
               </h3>
               <p className="text-xs sm:text-sm text-zinc-400 max-w-md mt-1">
-                {currentProduct.description}
+                {current.tagline}
               </p>
             </div>
 

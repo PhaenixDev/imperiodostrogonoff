@@ -47,7 +47,7 @@ setInterval(() => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    restaurant: 'Império do Strogonofe',
+    restaurant: 'Império do Strogonoff',
     integration: {
       provider: 'Anota AI',
       environment: anotaAdapter.environment,
@@ -183,7 +183,7 @@ app.post('/api/orders', async (req, res) => {
       status: result.status,
       estimatedMinutes: result.estimatedMinutes,
       message: result.message,
-      restaurant: 'Império do Strogonofe'
+      restaurant: 'Império do Strogonoff'
     });
 
   } catch (err) {
@@ -208,6 +208,6 @@ app.use((req, res, next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`\n👑 [Império do Strogonofe API] Servidor ativo em http://localhost:${PORT}`);
+  console.log(`\n👑 [Império do Strogonoff API] Servidor ativo em http://localhost:${PORT}`);
   console.log(`⚙️  [Integração] Motor Anota AI em modo: ${anotaAdapter.environment.toUpperCase()}`);
 });

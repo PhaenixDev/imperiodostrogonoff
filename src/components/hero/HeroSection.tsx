@@ -1,6 +1,11 @@
 import React from 'react';
 import { ChevronDown, UtensilsCrossed, ShieldCheck, HeartHandshake, Truck, Sparkles } from 'lucide-react';
 import { RESTAURANT_CONFIG } from '../../config/restaurantConfig';
+import { MENU_PRODUCTS } from '../../data/menuData';
+import { formatBRL } from '../../services/whatsappService';
+
+// Selo "A partir de": sempre o menor preço do cardápio oficial
+const LOWEST_PRICE = Math.min(...MENU_PRODUCTS.map(p => p.price));
 
 export const HeroSection: React.FC = () => {
   return (
@@ -26,7 +31,7 @@ export const HeroSection: React.FC = () => {
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-serif font-black tracking-tight leading-[1.1] text-white">
                 O Sabor Real do <br />
                 <span className="text-gold-gradient drop-shadow-sm">
-                  Império do Estrogonofe
+                  Império do Strogonoff
                 </span>
               </h1>
               
@@ -52,7 +57,7 @@ export const HeroSection: React.FC = () => {
               </a>
 
               <a
-                href={`https://wa.me/${RESTAURANT_CONFIG.whatsappNumber}?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20no%20Imp%C3%A9rio%20do%20Strogonofe`}
+                href={`https://wa.me/${RESTAURANT_CONFIG.whatsappNumber}?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20no%20Imp%C3%A9rio%20do%20Strogonoff`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-8 py-4 rounded-xl bg-[#1a1a24] hover:bg-[#252533] border border-amber-500/40 hover:border-amber-400 text-amber-200 font-bold text-sm uppercase tracking-wider transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 shadow-lg"
@@ -112,7 +117,7 @@ export const HeroSection: React.FC = () => {
                 {/* Floating promo badge overlay */}
                 <div className="absolute bottom-6 right-6 bg-gradient-to-r from-amber-500 to-amber-600 text-black font-extrabold px-4 py-2 rounded-2xl shadow-xl flex items-center gap-2 border border-yellow-200/50">
                   <span className="text-xs uppercase tracking-wider">A partir de</span>
-                  <span className="text-base font-black">R$ 19,90</span>
+                  <span className="text-base font-black">{formatBRL(LOWEST_PRICE)}</span>
                 </div>
               </div>
 

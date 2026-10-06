@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { createWhatsAppOrderLink } from '../services/whatsappService';
+import { createWhatsAppOrderLink, getPaymentLines } from '../services/whatsappService';
+import { getPaymentError, parseCashAmount, type PaymentMethodId } from '../services/paymentService';
 import type { CartItem, OrderDetails } from '../services/whatsappService';
 import type { Product } from '../data/menuData';
 import { submitOrderToBackend } from '../services/orderService';
@@ -12,8 +13,7 @@ interface CartContextType {
   items: CartItem[];
   itemCount: number;
   subtotal: number;
-  deliveryFee: number;
-  total: number;
+  total: number; // total dos produtos (taxa de entrega é consultada pelo WhatsApp)
   isCartOpen: boolean;
   setIsCartOpen: (open: boolean) => void;
   isCheckoutModalOpen: boolean;
@@ -43,8 +43,11 @@ interface CartContextType {
   setAddressComplement: (complement: string) => void;
   customerNotes: string;
   setCustomerNotes: (notes: string) => void;
-  paymentMethod: string;
-  setPaymentMethod: (method: string) => void;
+  paymentMethod: PaymentMethodId | ''; // '' = cliente ainda não escolheu (obrigatório)
+  setPaymentMethod: (method: PaymentMethodId) => void;
+  cashNoteInput: string; // valor da nota digitado (só em "Valor em Nota")
+  setCashNoteInput: (value: string) => void;
+  paymentError: string | null;
 
   // Distância de entrega (Google Maps)
   deliveryDistance: DistanceResult | null;
@@ -63,7 +66,8 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
-const CART_STORAGE_KEY = 'imperio_cart_v2';
+// v3: cardápio oficial novo — descarta carrinhos salvos com produtos/preços antigos
+const CART_STORAGE_KEY = 'imperio_cart_v3';
 const CUSTOMER_STORAGE_KEY = 'imperio_customer_data_v1';
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -98,7 +102,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [addressNeighborhood, setAddressNeighborhood] = useState(savedCustomer.neighborhood || '');
   const [addressComplement, setAddressComplement] = useState(savedCustomer.complement || '');
   const [customerNotes, setCustomerNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('PIX na Entrega');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodId | ''>('');
+  const [cashNoteInput, setCashNoteInput] = useState('');
+  const paymentError = getPaymentError(paymentMethod, cashNoteInput);
+  const cashNoteAmount = paymentMethod === 'valor_nota' ? parseCashAmount(cashNoteInput) ?? undefined : undefined;
 
   const [deliveryDistance, setDeliveryDistance] = useState<DistanceResult | null>(null);
   const [isCalculatingDistance, setIsCalculatingDistance] = useState(false);
@@ -158,10 +165,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
   const subtotal = items.reduce((acc, item) => acc + (item.unitPrice * item.quantity), 0);
-  
-  // Taxa de entrega fixa estimada (ou 0 se retirada)
-  const deliveryFee = orderType === 'delivery' ? 5.00 : 0.00;
-  const total = subtotal + deliveryFee;
+
+  // A taxa de entrega não é fixa: o cliente consulta o valor pelo WhatsApp.
+  // Por isso o total considera só os produtos.
+  const total = subtotal;
 
   const openProductModal = (product: Product) => {
     setSelectedProductForModal(product);
@@ -243,6 +250,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setOrderError('Seu carrinho está vazio.');
       return false;
     }
+    if (paymentError) {
+      setOrderError(paymentError);
+      return false;
+    }
 
     setIsSubmittingOrder(true);
     setOrderError(null);
@@ -273,10 +284,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         city: 'São Paulo',
         state: 'SP'
       } : undefined,
-      paymentMethod,
+      // mesmo texto da mensagem do WhatsApp (ex.: "Forma de Pagamento: Dinheiro na Entrega | Valor em Nota: R$50,00")
+      paymentMethod: getPaymentLines(paymentMethod || undefined, cashNoteAmount).join(' | '),
       notes: customerNotes,
       subtotal,
-      deliveryFee,
       total
     };
 
@@ -305,7 +316,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * Fluxo de suporte/contingência via WhatsApp
    */
   const checkoutWhatsApp = () => {
-    if (items.length === 0) return;
+    if (items.length === 0 || paymentError) return;
 
     const fullAddress = orderType === 'delivery' && addressStreet.trim()
       ? `${addressStreet}, ${addressNumber} - ${addressNeighborhood}${addressComplement ? ` (${addressComplement})` : ''}`
@@ -320,7 +331,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       distanceText: deliveryDistance?.success ? deliveryDistance.distanceText : undefined,
       durationText: deliveryDistance?.success ? deliveryDistance.durationText : undefined,
       notes: customerNotes,
-      paymentMethod,
+      paymentMethod: paymentMethod || undefined,
+      cashNoteAmount,
       subtotal
     };
 
@@ -334,7 +346,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         items,
         itemCount,
         subtotal,
-        deliveryFee,
         total,
         isCartOpen,
         setIsCartOpen,
@@ -365,6 +376,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCustomerNotes,
         paymentMethod,
         setPaymentMethod,
+        cashNoteInput,
+        setCashNoteInput,
+        paymentError,
         deliveryDistance,
         isCalculatingDistance,
         isSubmittingOrder,

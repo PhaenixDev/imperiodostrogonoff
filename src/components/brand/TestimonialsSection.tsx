@@ -49,7 +49,7 @@ export const TestimonialsSection: React.FC = () => {
             O QUE DIZEM NOSSOS <span className="text-gold-gradient">CLIENTES</span>
           </h3>
           <p className="text-xs sm:text-sm text-zinc-400">
-            Avaliações 100% reais de quem pede e aprova o Império do Estrogonofe.
+            Avaliações 100% reais de quem pede e aprova o Império do Strogonoff.
           </p>
         </div>
 

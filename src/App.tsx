@@ -6,7 +6,6 @@ import { FeaturedSection } from './components/menu/FeaturedSection';
 import { ProductViewer360 } from './components/viewer360/ProductViewer360';
 import { CategoryNavigation } from './components/menu/CategoryNavigation';
 import { DishesGrid } from './components/menu/DishesGrid';
-import { BeveragesSection } from './components/menu/BeveragesSection';
 import { AboutSection } from './components/brand/AboutSection';
 import { TestimonialsSection } from './components/brand/TestimonialsSection';
 import { InstagramGallery } from './components/brand/InstagramGallery';
@@ -19,7 +18,7 @@ import { CartDrawer } from './components/ordering/CartDrawer';
 import { CheckoutModal } from './components/ordering/CheckoutModal';
 
 export const AppContent: React.FC = () => {
-  const [activeCategory, setActiveCategory] = useState('destaques');
+  const [activeCategory, setActiveCategory] = useState('frango');
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-[#fdfbf7] flex flex-col selection:bg-amber-400 selection:text-black">
@@ -42,11 +41,8 @@ export const AppContent: React.FC = () => {
           onSelectCategory={setActiveCategory}
         />
 
-        {/* 6, 7, 8. Meat Dishes, Chicken Dishes, and Portions */}
+        {/* 6, 7, 8. Chicken Dishes, Meat Dishes, and Economy Combos */}
         <DishesGrid />
-
-        {/* 9. Beverages Section */}
-        <BeveragesSection />
 
         {/* 10. About the Restaurant */}
         <AboutSection />

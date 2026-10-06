@@ -26,7 +26,7 @@ export interface SubmitOrderPayload {
   paymentMethod: string;
   notes?: string;
   subtotal: number;
-  deliveryFee: number;
+  // sem deliveryFee: a taxa de entrega é consultada pelo WhatsApp (o backend assume 0 quando ausente)
   total: number;
 }
 

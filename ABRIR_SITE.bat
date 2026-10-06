@@ -1,5 +1,5 @@
 @echo off
-title Imperio do Strogonofe - Plataforma Oficial de Pedidos
+title Imperio do Strogonoff - Plataforma Oficial de Pedidos
 chcp 65001 > nul
 echo ========================================================
 echo   👑 IMPÉRIO DO STROGONOFFE — WEBSITE OFICIAL & API

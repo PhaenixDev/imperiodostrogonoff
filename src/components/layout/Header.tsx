@@ -74,7 +74,7 @@ export const Header: React.FC = () => {
             <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border border-imperio-gold/40 p-0.5 bg-black flex items-center justify-center overflow-hidden shadow-gold-glow group-hover:border-imperio-gold transition-colors">
               <img
                 src="/images/menu/logo.webp"
-                alt="Logo Império do Strogonofe"
+                alt="Logo Império do Strogonoff"
                 className="w-full h-full object-contain transform group-hover:scale-105 transition-transform"
                 loading="eager"
               />
@@ -86,7 +86,7 @@ export const Header: React.FC = () => {
                 </span>
                 <span className="text-imperio-gold text-xs font-serif italic">do</span>
                 <span className="font-serif font-black tracking-wider text-base sm:text-lg text-gold-gradient uppercase">
-                  Strogonofe
+                  Strogonoff
                 </span>
               </div>
               <p className="text-[10px] text-zinc-400 hidden sm:block tracking-wider uppercase font-medium">
@@ -132,7 +132,7 @@ export const Header: React.FC = () => {
 
             {/* Direct WhatsApp Ordering Button */}
             <a
-              href={`https://wa.me/${RESTAURANT_CONFIG.whatsappNumber}?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20no%20Imp%C3%A9rio%20do%20Strogonofe!`}
+              href={`https://wa.me/${RESTAURANT_CONFIG.whatsappNumber}?text=Ol%C3%A1!%20Gostaria%20de%20fazer%20um%20pedido%20no%20Imp%C3%A9rio%20do%20Strogonoff!`}
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold px-4 py-2 rounded-full text-xs uppercase tracking-wider shadow-amber-glow hover:shadow-gold-glow transition-all transform hover:-translate-y-0.5"

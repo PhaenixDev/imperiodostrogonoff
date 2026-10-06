@@ -1,12 +1,12 @@
 import { RESTAURANT_CONFIG } from '../src/config/restaurantConfig.js';
-import { MENU_PRODUCTS, CATEGORIES, PRODUCTS_360 } from '../src/data/menuData.js';
+import { MENU_PRODUCTS, CATEGORIES, SHOWCASE_PRODUCTS } from '../src/data/menuData.js';
 import { generateWhatsAppMessage, createWhatsAppOrderLink, formatBRL } from '../src/services/whatsappService.js';
 import assert from 'assert';
 
 console.log('--- TEST 1: Menu Data Consistency ---');
 console.log(`Total Products: ${MENU_PRODUCTS.length}`);
 console.log(`Total Categories: ${CATEGORIES.length}`);
-console.log(`360 Products: ${PRODUCTS_360.length}`);
+console.log(`Showcase Products: ${SHOWCASE_PRODUCTS.length}`);
 
 // Ensure all menu categories have items
 for (const cat of CATEGORIES) {
@@ -20,44 +20,41 @@ const sampleOrder = {
   items: [
     {
       cartItemId: 'item-1',
-      productId: 'destaque-strogonoff',
-      name: 'Strogonoff Cremoso',
-      basePrice: 22.90,
-      unitPrice: 29.90, // with meat option +7.00
+      productId: 'carne-strogonoff',
+      name: 'Strogonoff de Carne',
+      basePrice: 29.90,
+      unitPrice: 35.90, // with Purê de Batata option +6.00
       quantity: 2,
       selectedOptions: [
-        { groupTitle: 'Proteína', optionName: 'Carne bovina macia', priceDelta: 7.00 }
+        { groupTitle: 'Opcionais', optionName: 'Purê de Batata', priceDelta: 6.00 }
       ],
       notes: 'Caprichar na batata palha',
-      image: '/images/menu/destaque_strogonoff.webp'
+      image: '/images/menu/carne_strogonoff.webp'
     },
     {
       cartItemId: 'item-2',
-      productId: 'combo-parmegiana',
-      name: 'Combo Parmegiana',
-      basePrice: 39.90,
-      unitPrice: 39.90,
+      productId: 'combo-parmegiana-coca-lata',
+      name: 'Combo à Parmegiana + Coca Lata',
+      basePrice: 33.90,
+      unitPrice: 33.90,
       quantity: 1,
-      selectedOptions: [
-        { groupTitle: 'Bebida', optionName: 'Coca-Cola Tradicional', priceDelta: 0 }
-      ],
-      image: '/images/menu/combo_parmegiana.webp'
+      image: '/images/menu/frango_parmegiana.webp'
     }
   ],
   orderType: 'delivery',
   address: 'Rua das Flores, 123 - Apto 42',
   notes: 'Tocar a campainha',
-  paymentMethod: 'PIX (Chave na confirmação)',
-  subtotal: (29.90 * 2) + 39.90 // 59.80 + 39.90 = 99.70
+  paymentMethod: 'pix',
+  subtotal: (35.90 * 2) + 33.90 // 71.80 + 33.90 = 105.70
 };
 
 const message = generateWhatsAppMessage(sampleOrder);
 console.log('Generated WhatsApp Message:\n');
 console.log(message);
 
-assert(message.includes('NOVO PEDIDO — IMPÉRIO DO STROGONOFF'), 'Missing title');
-assert(message.includes('2x Strogonoff Cremoso'), 'Missing item count');
-assert(message.includes('99,70'), 'Subtotal calculated incorrectly');
+assert(message.includes('NOVO PEDIDO - IMPÉRIO DO STROGONOFF'), 'Missing title');
+assert(message.includes('2x Strogonoff de Carne'), 'Missing item count');
+assert(message.includes('105,70'), 'Subtotal calculated incorrectly');
 assert(message.includes('Rua das Flores, 123 - Apto 42'), 'Missing address');
 
 const link = createWhatsAppOrderLink(sampleOrder);
